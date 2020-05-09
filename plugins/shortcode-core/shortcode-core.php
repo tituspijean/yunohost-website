@@ -1,16 +1,18 @@
 <?php
 namespace Grav\Plugin;
 
+use Composer\Autoload\ClassLoader;
 use Grav\Common\Assets;
-use Grav\Common\Page\Page;
+use Grav\Common\Page\Interfaces\PageInterface;
 use Grav\Common\Plugin;
 use Grav\Common\Utils;
+use Grav\Plugin\ShortcodeCore\ShortcodeManager;
+use Grav\Plugin\ShortcodeCore\ShortcodeTwigVar;
 use RocketTheme\Toolbox\Event\Event;
-use RocketTheme\Toolbox\ResourceLocator\UniformResourceLocator;
+
 
 class ShortcodeCorePlugin extends Plugin
 {
-
     /** @var  ShortcodeManager $shortcodes */
     protected $shortcodes;
 
@@ -19,14 +21,22 @@ class ShortcodeCorePlugin extends Plugin
      */
     public static function getSubscribedEvents()
     {
-        require_once(__DIR__.'/vendor/autoload.php');
-        require_once(__DIR__.'/classes/Shortcode.php');
-        require_once(__DIR__.'/classes/ShortcodeObject.php');
-        require_once(__DIR__.'/classes/ShortcodeManager.php');
-
         return [
-            'onPluginsInitialized' => ['onPluginsInitialized', 10],
+            'onPluginsInitialized' => [
+                ['autoload', 100001],
+                ['onPluginsInitialized', 10]
+            ]
         ];
+    }
+
+    /**
+     * [onPluginsInitialized:100000] Composer autoload.
+     *
+     * @return ClassLoader
+     */
+    public function autoload()
+    {
+        return require __DIR__ . '/vendor/autoload.php';
     }
 
     /**
@@ -46,7 +56,7 @@ class ShortcodeCorePlugin extends Plugin
             'onMarkdownInitialized'     => ['onMarkdownInitialized', 0],
             'onShortcodeHandlers'       => ['onShortcodeHandlers', 0],
             'onPageContentRaw'          => ['onPageContentRaw', 0],
-            'onPageContentProcessed'    => ['onPageContentProcessed', 0],
+            'onPageContentProcessed'    => ['onPageContentProcessed', -10],
             'onPageContent'             => ['onPageContent', 0],
             'onTwigInitialized'         => ['onTwigInitialized', 0]
         ]);
@@ -58,7 +68,8 @@ class ShortcodeCorePlugin extends Plugin
      * Theme initialization is best place to fire onShortcodeHandler event
      * in order to support both plugins and themes
      */
-    public function onThemeInitialized() {
+    public function onThemeInitialized()
+    {
         $this->grav->fireEvent('onShortcodeHandlers');
     }
 
@@ -92,17 +103,21 @@ class ShortcodeCorePlugin extends Plugin
         $this->processShortcodes($e['page'], 'processContent');
     }
 
-    protected function processShortcodes($page, $type = 'processContent') {
+    /**
+     * @param PageInterface $page
+     * @param string $type
+     */
+    protected function processShortcodes(PageInterface $page, $type = 'processContent') {
         $meta = [];
         $config = $this->mergeConfig($page);
 
         // Don't run in admin pages other than content
-        $admin_pages_only = isset($config['admin_pages_only']) ? $config['admin_pages_only'] : true;
+        $admin_pages_only = $config['admin_pages_only'] ?? true;
         if ($admin_pages_only && $this->isAdmin() && !Utils::startsWith($page->filePath(), $this->grav['locator']->findResource('page://'))) {
             return;
-        } else {
-            $this->active = $config->get('active', true);
         }
+
+        $this->active = $config->get('active', true);
 
         // if the plugin is not active (either global or on page) exit
         if (!$this->active) {
@@ -130,7 +145,11 @@ class ShortcodeCorePlugin extends Plugin
         }
     }
 
-    protected function getConfig($page)
+    /**
+     * @param PageInterface $page
+     * @return \Grav\Common\Data\Data
+     */
+    protected function getConfig(PageInterface $page)
     {
         $config = $this->mergeConfig($page);
         $this->active = false;
@@ -181,17 +200,6 @@ class ShortcodeCorePlugin extends Plugin
                     }
                 }
             }
-
-            if (isset($page_meta['shortcode'])) {
-                $objects = $page_meta['shortcode'];
-                $twig = $this->grav['twig'];
-
-                if (!empty($objects)) {
-                    foreach ($objects as $key => $object) {
-                        $twig->twig_vars['shortcode'][$key] = $object;
-                    }
-                }
-            }
         }
     }
 
@@ -200,7 +208,10 @@ class ShortcodeCorePlugin extends Plugin
      */
     public function onShortcodeHandlers()
     {
-        $this->shortcodes->registerAllShortcodes(__DIR__.'/shortcodes');
+        $include_default_shortcodes = $this->config->get('plugins.shortcode-core.include_default_shortcodes', true);
+        if ($include_default_shortcodes) {
+            $this->shortcodes->registerAllShortcodes(__DIR__ . '/classes/shortcodes', ['ignore' => ['Shortcode', 'ShortcodeObject']]);
+        }
 
         // Add custom shortcodes directory if provided
         $custom_shortcodes = $this->config->get('plugins.shortcode-core.custom_shortcodes');
@@ -214,31 +225,7 @@ class ShortcodeCorePlugin extends Plugin
      */
     public function onTwigInitialized()
     {
-        $this->grav['twig']->twig()->addFilter(
-            new \Twig_SimpleFilter(
-                'shortcodes',
-                [$this->shortcodes, 'processShortcodes']
-            )
-        );
-    }
-
-    /**
-     * Helper method that merges the content meta shortcode data with twig variables
-     *
-     * @param $meta
-     */
-    private function mergeTwigVars($meta)
-    {
-        // check content meta for objects, and if found as them as twig variables
-        if (isset($meta['shortcode'])) {
-            $objects = $meta['shortcode'];
-            $twig = $this->grav['twig'];
-
-            if (!empty($objects)) {
-                foreach ($objects as $key => $object) {
-                    $twig->twig_vars['shortcode'][$key] = $object;
-                }
-            }
-        }
+        $this->grav['twig']->twig()->addFilter(new \Twig_SimpleFilter('shortcodes', [$this->shortcodes, 'processShortcodes']));
+        $this->grav['twig']->twig_vars['shortcode'] = new ShortcodeTwigVar();
     }
 }

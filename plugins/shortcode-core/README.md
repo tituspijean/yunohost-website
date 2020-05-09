@@ -46,6 +46,7 @@ active: true
 active_admin: true
 admin_pages_only: true
 parser: regex
+include_default_shortcodes: true
 custom_shortcodes:
 load_fontawesome: false
 ```
@@ -54,7 +55,8 @@ load_fontawesome: false
 * `active: true|false` toggles if shortcodes will be enabled site-wide or not
 * `active_admin: true|false` toggles if shortcodes will be processed in the admin plugin
 * `admin_pages_only: true|false` toggles if admin should only process shortcodes for Grav pages
-* `parser: wordpress|regex|regular` let's you configure the parser to use.
+* `parser: wordpress|regex|regular` let's you configure the parser to use
+* `include_default_shortcodes: true|false` toggle the inclusion of shortcodes provided by this plugin
 * `custom_shortcodes:` the path to a directory where you can put your custom shortcodes (e.g. `/user/custom/shortcodes`)
 * `load_fontawesome: true|false` toggles if the fontawesome icon library should be loaded or not
 
@@ -312,7 +314,7 @@ Figure elements are the recommended way to add self-contained units of flow cont
 
 The HTML `<mark></mark>` tag is extremely useful to highlight text in your pages, and serves like a highlighter pen.  However, as we know that markdown inside of HTML is not processed, using this HTML is often not convenient as it means markdown inside will not be processed.
 
-Another important usecase is trying to highlight code in a markdown text block, again the HTML tag doesn't work becuase the result is escaped and treated like any other code and simply displayed.
+Another important usecase is trying to highlight code in a markdown text block, again the HTML tag doesn't work because the result is escaped and treated like any other code and simply displayed.
 
 The solution is simple, just use the shortcode version instead:
 
@@ -413,6 +415,27 @@ Lorem ipsum dolor sit amet...
 
 **Note:** The show/hide behaviour is not supported in IE 11 or Edge 18, and the element will be permanently open. You can check the current status of browser compatibility at [Can I Use](https://caniuse.com/#search=details).
 
+#### Lorem Ipsum
+
+Useful for faking content, you can use a shortcode to quickly generate some random "lorem ipsum" text:
+
+**Paragraphs:**
+```
+[lorem=5 /]
+
+[lorem p=5 tag=div /]
+```
+
+**Sentences:**
+```
+[lorem s=4 /]
+```
+
+**Words:**
+```
+[lorem w=35 /]
+```
+
 ## Using Shortcodes in Twig
 
 You can now use shortcodes in Twig templates and process them with the `|shortcodes` filter. For example:
@@ -422,11 +445,17 @@ You can now use shortcodes in Twig templates and process them with the `|shortco
 {{ twig_text|shortcodes }}
 ```
 
-## Developing Shortcode Plugins
+## Custom Shortcodes
 
-The **Shortcode Core** plugin is developed on the back of the [Thunderer Advanced Shortcode Engine](https://github.com/thunderer/Shortcode) and as such loads the libraries and classes required to build third party shortcode plugins.
+### Simple Way
 
-The simplest way to add your own custom shortcodes, it to simply create a new shortcode in a directory (e.g. `user/custom/shortcodes`) such as this simple one to allow for strike-through text:
+First, configure a directory from which custom shortcodes are loaded. Edit `user/config/plugins/shortcode-core.yaml` like follows (create it if it does not exist):
+
+```yaml
+custom_shortcodes: '/user/custom/shortcodes'
+```
+
+To add a custom shortcode, create a PHP file that defines a new shortcode class. For example, to create a shortcode for ~~strikethrough~~ text, save the following code as `user/custom/shortcodes/StrikeShortcode.php`:
 
 ```php
 <?php
@@ -445,13 +474,15 @@ class StrikeShortcode extends Shortcode
 }
 ```
 
-Then simply set the plugin to look in this directory for custom shortcodes by editing the `user/config/plugins/shortcode-core.yaml` file (create it if missing):
+Note that the class name (`StrikeShortcode`) must match the file name for the shortcode to work.
 
-```yaml
-custom_shortcodes: '/user/custom/shortcodes'
-```
+`[strike]text[/strike]` should now produce strikethrough text.
 
-The more flexible approach is to create a custom plugin to do provide a tidy package for your shotdcodes.
+### As a Custom Plugin
+
+The more flexible approach is to create a custom plugin.
+
+The **Shortcode Core** plugin is developed on the back of the [Thunderer Advanced Shortcode Engine](https://github.com/thunderer/Shortcode) and as such loads the libraries and classes required to build third party shortcode plugins.
 
 We introduced a new event called `onShortcodeHandlers()` that allows a 3rd party plugin to create and add their own custom handlers.  These are then all processed by the core plugin in one shot.
 

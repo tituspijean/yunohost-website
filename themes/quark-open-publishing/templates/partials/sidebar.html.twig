@@ -1,4 +1,4 @@
-{% set feed_url = blog.url == '/' or blog.url == base_url_relative ? (base_url_relative~'/'~blog.slug) : blog.url %}
+{% set feed_url = blog.url == '/' or blog.url == base_url_relative ? (base_url_relative~'/'~blog.slug) : '/'~blog.slug %}
 {% set new_base_url = blog.url == '/' ? '' : blog.url %}
 
 {% set sidebar_page = pages.find('/sidebar') %}
@@ -35,7 +35,7 @@
 {% if config.plugins.taxonomylist.enabled %}
     <div class="sidebar-content">
         <h4>{{ 'THEME_QUARK.SIDEBAR.POPULAR_TAGS.HEADLINE'|t }}</h4>
-        {% include 'partials/taxonomylist.html.twig' with {'base_url':new_base_url, 'taxonomy':'tag', 'children_only': true} %}
+        {% include 'partials/taxonomylist.html.twig' with {'base_url':new_base_url, 'taxonomy':'tag'} %}
     </div>
 {% endif %}
 {% if config.plugins.archives.enabled %}

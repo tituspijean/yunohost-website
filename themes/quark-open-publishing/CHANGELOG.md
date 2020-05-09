@@ -1,3 +1,119 @@
+# v2.1.2
+## 04/30/2020
+
+1. [](#bugfix)
+  * Added missing closing paragraph tag on `sections` page types (thanks to @lazybadger for finding the issue)
+
+# v2.1.1
+## 04/27/2020
+
+1. [](#new)
+  * Added support for optional display of title links for `embedlycard` page types
+
+# v2.1.0
+## 02/13/2020
+
+1. [](#new)
+  * Updated demo pages in theme '_demo' folder
+
+# v2.0.9
+## 02/06/2020
+
+1. [](#new)
+  * Support for Menu property in Sections pages (thanks to @awrog for the suggestion and initial Twig)
+
+# v2.0.8
+## 01/21/2020
+
+1. [](#new)
+  * Support for ReadingTime Plugin (thanks to @B1gG for the initial PR)
+1. [](#improved)
+    * Updated demo pages in theme '_demo' folder
+1. [](#bugfix)
+  * Restored display of taxonomy tags on blog post pages (Sections pages now use the `filter` taxonomy item, which is also needed to be in Taxonomy `site.yaml` config)
+
+# v2.0.7
+## 01/02/2020
+
+1. [](#improved)
+  * Updated CSS for left/right image alignment (thanks to @OleVik)
+
+# v2.0.6
+## 12/18/2019
+
+1. [](#new)
+  * Support for custom links (e.g. PDFs) with embedded Presentations
+
+# v2.0.5
+## 12/08/2019
+
+1. [](#improved)
+  * Changed reference of "Menubar" to "Menu" in theme setting
+
+# v2.0.4
+## 12/08/2019
+
+1. [](#improved)
+  * Reorganized theme options for Git Sync Link and Custom Menu Items
+  * Renamed template/blueprint of CustomContentList to CustomPageTypes
+  * Removed deprecated swipedeck template partials
+
+# v2.0.3
+## 11/27/2019
+
+1. [](#improved)
+    * Removed deprecated swipedeck template, blueprint and shortcode
+
+# v2.0.2
+## 11/22/2019
+
+1. [](#improved)
+    * Updated experimental Markdown file Shortcode ([markdownfile url=""]) to support displaying Grav Markdown pages (frontmatter is removed)
+
+# v2.0.1
+## 11/09/2019
+
+1. [](#new)
+    * Added experimental Markdown file Shortcode ([markdownfile url=""]) to embed external Markdown files (thanks to @OleVik for help along the way)
+
+# v2.0.0
+## 10/09/2019
+
+1. [](#improved)
+    * Removed theme option to hide homepage in menubar (set the 'visible' option to 'false' on homepage for same functionality)
+
+# v1.9.9
+## 10/04/2019
+
+1. [](#bugfix)    
+    * Support proper RSS feed URL when 'Append URL extension' is set to '.html'
+1. [](#improved)
+    * Updated demo pages in theme '_demo' folder
+
+# v1.9.8
+## 09/14/2019
+
+1. [](#bugfix)    
+    * Updated JS to prevent possible conflict with Bricklayer CSS
+
+# v1.9.7
+## 09/12/2019
+
+1. [](#bugfix)    
+    * Support CTRL + click to open links in new tab as expected
+
+# v1.9.6
+## 08/26/2019
+
+1. [](#bugfix)
+    * Fixed support for blog item taxonomy tags in 'chromeless' blog list view
+
+# v1.9.5
+## 08/16/2019
+
+1. [](#improved)
+    * Improved Twig 2.0 compatibility
+
 # v1.9.4
 ## 08/10/2019
 
